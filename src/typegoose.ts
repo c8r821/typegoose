@@ -43,7 +43,7 @@ export class Typegoose {
     // iterate trough all parents
     while (parentCtor && parentCtor.name !== 'Typegoose' && parentCtor.name !== 'Object') {
       // extend schema
-      sch = this.buildSchema<T>(t, parentCtor.name, schemaOptions, sch);
+      sch = this.buildSchema<T>(t, parentCtor.name, schemaOptions, sch, pluginList);
       // next parent
       parentCtor = Object.getPrototypeOf(parentCtor.prototype).constructor;
     }
@@ -98,7 +98,7 @@ export class Typegoose {
     }
 
     if (plugins[name]) {
-      _.forEach(plugins[name].concat(pluginList), (plugin) => {
+      _.forEach(plugins[name].concat(pluginList || []), (plugin) => {
         sch.plugin(plugin.mongoosePlugin, plugin.options);
       });
     }
