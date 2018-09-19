@@ -7,8 +7,8 @@
     "lib/*.js",
     "lib/*.d.ts"
   ],
-  "prepack": "rimraf lib && tsc",
   "scripts": {
+    "prepare": "npm run build",
     "start": "npm run build && node ./lib/typegoose.js",
     "build": "rimraf lib && tsc",
     "lint": "tslint --project tsconfig.json",
