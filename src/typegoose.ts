@@ -20,7 +20,7 @@ export interface GetModelForClassOptions {
   existingMongoose?: mongoose.Mongoose;
   schemaOptions?: mongoose.SchemaOptions;
   existingConnection?: mongoose.Connection;
-  pluginList?: { plugin, options }[];
+  pluginList?: { mongoosePlugin, options }[];
 }
 
 export class Typegoose {
@@ -37,7 +37,7 @@ export class Typegoose {
     const name = this.constructor.name;
 
     // get schema of current model
-    let sch = this.buildSchema<T>(t, name, schemaOptions, pluginList);
+    let sch = this.buildSchema<T>(t, name, schemaOptions, undefined, pluginList);
     // get parents class name
     let parentCtor = Object.getPrototypeOf(this.constructor.prototype).constructor;
     // iterate trough all parents
@@ -61,7 +61,7 @@ export class Typegoose {
     return models[name] as ModelType<this> & T;
   }
 
-  private buildSchema<T>(t: T, name: string, schemaOptions, sch?: mongoose.Schema, pluginList?: { plugin, options }[]) {
+  private buildSchema<T>(t: T, name: string, schemaOptions, sch?: mongoose.Schema, pluginList?: { mongoosePlugin, options }[]) {
     const Schema = mongoose.Schema;
 
     if (!sch) {
@@ -98,7 +98,7 @@ export class Typegoose {
     }
 
     if (plugins[name]) {
-      _.forEach([ ...plugins[name], ...pluginList ], (plugin) => {
+      _.forEach(plugins[name].concat(pluginList), (plugin) => {
         sch.plugin(plugin.mongoosePlugin, plugin.options);
       });
     }
