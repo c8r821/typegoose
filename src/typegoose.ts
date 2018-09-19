@@ -20,23 +20,24 @@ export interface GetModelForClassOptions {
   existingMongoose?: mongoose.Mongoose;
   schemaOptions?: mongoose.SchemaOptions;
   existingConnection?: mongoose.Connection;
+  pluginList?: { plugin, options }[];
 }
 
 export class Typegoose {
-  getModelForClass<T>(t: T, { existingMongoose, schemaOptions, existingConnection }: GetModelForClassOptions = {}) {
+  getModelForClass<T>(t: T, { existingMongoose, schemaOptions, existingConnection, pluginList }: GetModelForClassOptions = {}) {
     const name = this.constructor.name;
     if (!models[name]) {
-      this.setModelForClass(t, { existingMongoose, schemaOptions, existingConnection });
+      this.setModelForClass(t, { existingMongoose, schemaOptions, existingConnection, pluginList });
     }
 
     return models[name] as ModelType<this> & T;
   }
 
-  setModelForClass<T>(t: T, { existingMongoose, schemaOptions, existingConnection }: GetModelForClassOptions = {}) {
+  setModelForClass<T>(t: T, { existingMongoose, schemaOptions, existingConnection, pluginList }: GetModelForClassOptions = {}) {
     const name = this.constructor.name;
 
     // get schema of current model
-    let sch = this.buildSchema<T>(t, name, schemaOptions);
+    let sch = this.buildSchema<T>(t, name, schemaOptions, pluginList);
     // get parents class name
     let parentCtor = Object.getPrototypeOf(this.constructor.prototype).constructor;
     // iterate trough all parents
@@ -60,7 +61,7 @@ export class Typegoose {
     return models[name] as ModelType<this> & T;
   }
 
-  private buildSchema<T>(t: T, name: string, schemaOptions, sch?: mongoose.Schema) {
+  private buildSchema<T>(t: T, name: string, schemaOptions, sch?: mongoose.Schema, pluginList?: { plugin, options }[]) {
     const Schema = mongoose.Schema;
 
     if (!sch) {
@@ -97,7 +98,7 @@ export class Typegoose {
     }
 
     if (plugins[name]) {
-      _.forEach(plugins[name], (plugin) => {
+      _.forEach([ ...plugins[name], ...pluginList ], (plugin) => {
         sch.plugin(plugin.mongoosePlugin, plugin.options);
       });
     }
